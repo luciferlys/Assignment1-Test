@@ -26,6 +26,7 @@ int main()
 	vector<string> words; //To save all original data from input file.
 	vector<string> investment; //To save all investment data.
 	vector<double> contribution;
+	vector<double> profit;
 	int indexCount = 1; //To save the index of all cells in the input file.
 	double allInvestment = 0;
 
@@ -34,13 +35,13 @@ int main()
 		cin >> path;
 		process = isExist(path);
 		if (!process) {
-			cout << "Invalid path. Please enter a valid path." << endl;
+			cout << "Invalid path. Check and enter again!\n" << endl;
 		}
 	}
 
-	auto start = chrono::steady_clock::now();
+	auto start = chrono::steady_clock::now();//Start counter
 
-	ifstream file(path);
+	ifstream file(path);//Open input file
 
 	while (readFile) {
 		if (indexCount % 4) {
@@ -66,66 +67,47 @@ int main()
 		}
 	}//All original data is read into words. All investment data is read into investment.
 
+	file.close();//Close input file
+
 	vector<string> rows;
 	for (int i = 0; i < words.size(); i += 4) {
 		rows.push_back(words[i] + "," + words[i + 1] + "," + words[i + 2] + "," + words[i + 3]);
-	}
-
-	for (int i = 0; i < rows.size(); i++) {
-		cout << rows[i] << endl;
-	}
+	}//combine every row of original file
 
 	for (int i = 1; i < investment.size(); i++) {
 		allInvestment = allInvestment + stod(investment[i]);
-	}
+	}//calculate the total investment
 
-	if(!(allInvestment == 0))
-	for (int i = 1; i < investment.size(); i++) {
-		contribution.push_back(stod(investment[i]) / allInvestment);
+	if (!(allInvestment == 0)) {
+		for (int i = 1; i < investment.size(); i++) {
+			contribution.push_back(stod(investment[i]) / allInvestment);
+		}
+		for (int i = 0; i < contribution.size(); i++) {
+			if (stod(investment[i + 1]) > 0) {
+				profit.push_back(contribution[i] * 0.2 * allInvestment);
+			}
+			else {
+				profit.push_back(0);
+			}
+		}
 	}
-	else if(allInvestment == 0){
-		cout << "Sorry, the total investment in your input file is 0. Please check and correct it then run this programme again." << endl;
+	else {
+		cout << "Sorry, the total investment in your input file is not positive. Please check and correct it then run this programme again." << endl;
 		exit(0);
-	}
-
-	for (int i = 0; i < contribution.size(); i++) {
-		cout << fixed << setprecision(2) << contribution[i] * 100 << "%" << endl;
-	}
-
-	//cout << fixed <<setprecision(2) << allInvestment << endl;
-
-	for (int i = 0; i < words.size(); i++) {
-		cout << setprecision(2) << words[i] << endl;
-	}
-
-	for (int i = 1; i < investment.size(); i++) {
-		cout << setprecision(2) << investment[i] << endl;
-	}
-	file.close();
-
-	
+	}//Investment must be positive, or it will output error.
 
 	ofstream ofile("test.csv");
-	ofile << "1" << "," << "2" << endl;
-	ofile << "3" << "," << "4" << endl;
+	
+	ofile << rows[0] << ",Contribution of the investor,expected profit" << endl;
+	for (int i = 1; i < rows.size(); i++) {
+		ofile << rows[i] << "," << fixed << setprecision(2) << contribution[i - 1] * 100 << "%," << profit[i - 1] << endl;
+	}
+
 	ofile.close();
 
 	auto end = chrono::steady_clock::now();
 	std::chrono::duration<double> elapsed_time = end - start;
 	cout << fixed << setprecision(8) << "The processing time is " << elapsed_time.count() << " seconds." << endl;
-	//string address = "newFile.csv";
 
-	//ifstream myfile(address);
 	system("pause");
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
