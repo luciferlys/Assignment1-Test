@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <iomanip>
+#include <chrono>
 using namespace std;
 
 bool isExist(string add) {
@@ -37,6 +38,8 @@ int main()
 		}
 	}
 
+	auto start = chrono::steady_clock::now();
+
 	ifstream file(path);
 
 	while (readFile) {
@@ -63,27 +66,40 @@ int main()
 		}
 	}//All original data is read into words. All investment data is read into investment.
 
+	vector<string> rows;
+	for (int i = 0; i < words.size(); i += 4) {
+		rows.push_back(words[i] + "," + words[i + 1] + "," + words[i + 2] + "," + words[i + 3]);
+	}
+
+	for (int i = 0; i < rows.size(); i++) {
+		cout << rows[i] << endl;
+	}
+
 	for (int i = 1; i < investment.size(); i++) {
 		allInvestment = allInvestment + stod(investment[i]);
 	}
 
-	if(!allInvestment)
+	if(!(allInvestment == 0))
 	for (int i = 1; i < investment.size(); i++) {
 		contribution.push_back(stod(investment[i]) / allInvestment);
 	}
-
-	for (int i = 0; i < contribution.size(); i++) {
-		cout << contribution[i] << endl;
+	else if(allInvestment == 0){
+		cout << "Sorry, the total investment in your input file is 0. Please check and correct it then run this programme again." << endl;
+		exit(0);
 	}
 
-	cout << fixed << setprecision(2) << allInvestment << endl;
+	for (int i = 0; i < contribution.size(); i++) {
+		cout << fixed << setprecision(2) << contribution[i] * 100 << "%" << endl;
+	}
+
+	//cout << fixed <<setprecision(2) << allInvestment << endl;
 
 	for (int i = 0; i < words.size(); i++) {
-		cout << words[i] << endl;
+		cout << setprecision(2) << words[i] << endl;
 	}
 
 	for (int i = 1; i < investment.size(); i++) {
-		cout << investment[i] << endl;
+		cout << setprecision(2) << investment[i] << endl;
 	}
 	file.close();
 
@@ -94,7 +110,9 @@ int main()
 	ofile << "3" << "," << "4" << endl;
 	ofile.close();
 
-
+	auto end = chrono::steady_clock::now();
+	std::chrono::duration<double> elapsed_time = end - start;
+	cout << fixed << setprecision(8) << "The processing time is " << elapsed_time.count() << " seconds." << endl;
 	//string address = "newFile.csv";
 
 	//ifstream myfile(address);
