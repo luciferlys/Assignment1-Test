@@ -28,46 +28,70 @@ int main()
 	vector<double> contribution;
 	vector<double> profit;
 	int indexCount = 1; //To save the index of all cells in the input file.
+	bool formatCheck = false;
 	double allInvestment = 0;
+	auto start1 = chrono::steady_clock::now();
+	auto end1 = chrono::steady_clock::now();
 
-	while (!process) {
-		cout << "Please enter the path of the input file:" << endl;
-		cin >> path;
-		process = isExist(path);
-		if (!process) {
-			cout << "Invalid path. Check and enter again!\n" << endl;
+	while (!formatCheck) {
+		process = false;
+		indexCount = 1;
+		while (!process) {
+			cout << "Please enter the path of the input file:" << endl;
+			cin >> path;
+			process = isExist(path);
+			if (!process) {
+				cout << "Invalid path. Check and enter again!\n" << endl;
+			}
 		}
+
+		start1 = chrono::steady_clock::now();//Start counter
+
+		ifstream file(path);//Open input file
+
+		readFile = true;
+
+		while (readFile) {
+			
+			if (indexCount % 4) {
+				if (getline(file, line, ',')) {
+					readFile = true;
+					words.push_back(line);
+					indexCount++;
+					
+				}
+				else {
+					readFile = false;
+					formatCheck = true;
+				}
+			}
+			else {
+				if (getline(file, line)) {
+					readFile = true;
+					words.push_back(line);
+					investment.push_back(line);
+					indexCount++;
+					if (indexCount == 5) {
+						if (!(words[0] == "Investor's name" && words[1] == "Bank account" && words[2] == "Sort code" && words[3] == "Current year's investment(£)")) {
+							cout << "Your format of file is incorrect. Please check and enter the name of correct input file.\n" << endl;
+							readFile = false;
+							words.clear();
+						investment.clear();
+						}
+					}
+				}
+				else {
+					readFile = false;
+					formatCheck = true;
+				}
+			}
+		}//All original data is read into words. All investment data is read into investment.
+		file.close();//Close input file
+		end1 = chrono::steady_clock::now();
+
 	}
 
-	auto start = chrono::steady_clock::now();//Start counter
-
-	ifstream file(path);//Open input file
-
-	while (readFile) {
-		if (indexCount % 4) {
-			if (getline(file, line, ',')) {
-				readFile = true;
-				words.push_back(line);
-				indexCount++;
-			}
-			else {
-				readFile = false;
-			}
-		}
-		else {
-			if (getline(file, line)) {
-				readFile = true;
-				words.push_back(line);
-				investment.push_back(line);
-				indexCount++;
-			}
-			else {
-				readFile = false;
-			}
-		}
-	}//All original data is read into words. All investment data is read into investment.
-
-	file.close();//Close input file
+	auto start2 = chrono::steady_clock::now();
 
 	vector<string> rows;
 	for (int i = 0; i < words.size(); i += 4) {
@@ -78,7 +102,7 @@ int main()
 		allInvestment = allInvestment + stod(investment[i]);
 	}//calculate the total investment
 
-	if (!(allInvestment == 0)) {
+	if (allInvestment > 0) {
 		for (int i = 1; i < investment.size(); i++) {
 			contribution.push_back(stod(investment[i]) / allInvestment);
 		}
@@ -91,13 +115,21 @@ int main()
 			}
 		}
 	}
-	else {
-		cout << "Sorry, the total investment in your input file is not positive. Please check and correct it then run this programme again." << endl;
+	else if (allInvestment == 0){
+		cout << "Sorry, the total investment in your input file is 0. Please check and correct it then run this programme again." << endl;
 		exit(0);
-	}//Investment must be positive, or it will output error.
+	}
+	else if (allInvestment < 0) {
+		for (int i = 1; i < investment.size(); i++) {
+			contribution.push_back(stod(investment[i]) / allInvestment);
+		}
+		for (int i = 0; i < contribution.size(); i++) {
+			profit.push_back(0);
+		}
+	}
 
-	ofstream ofile("test.csv");
-	
+	ofstream ofile("Outcome.csv");
+
 	ofile << rows[0] << ",Contribution of the investor,expected profit" << endl;
 	for (int i = 1; i < rows.size(); i++) {
 		ofile << rows[i] << "," << fixed << setprecision(2) << contribution[i - 1] * 100 << "%," << profit[i - 1] << endl;
@@ -105,8 +137,8 @@ int main()
 
 	ofile.close();
 
-	auto end = chrono::steady_clock::now();
-	std::chrono::duration<double> elapsed_time = end - start;
+	auto end2 = chrono::steady_clock::now();
+	std::chrono::duration<double> elapsed_time = (end1 - start1) + (end2 - start2);
 	cout << fixed << setprecision(8) << "The processing time is " << elapsed_time.count() << " seconds." << endl;
 
 	system("pause");
