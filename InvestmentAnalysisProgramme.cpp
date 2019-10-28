@@ -52,13 +52,11 @@ int main()
 		readFile = true;
 
 		while (readFile) {
-			
 			if (indexCount % 4) {
 				if (getline(file, line, ',')) {
 					readFile = true;
 					words.push_back(line);
 					indexCount++;
-					
 				}
 				else {
 					readFile = false;
@@ -88,7 +86,6 @@ int main()
 		}//All original data is read into words. All investment data is read into investment.
 		file.close();//Close input file
 		end1 = chrono::steady_clock::now();
-
 	}
 
 	auto start2 = chrono::steady_clock::now();
